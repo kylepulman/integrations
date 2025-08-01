@@ -1,5 +1,7 @@
-import http from 'node:http'
 import dotenv from 'dotenv'
+import http from 'node:http'
+
+import * as twilio from './twilio'
 
 dotenv.config({ quiet: true })
 
@@ -16,12 +18,13 @@ server.on('listening', () => {
 
 server.on('error', (error) => {
   if (
-    'code' in error 
+    'code' in error
     && error.code === 'EADDRINUSE'
     && 'port' in error
   ) {
     console.error(`Port %d is in use...`, error.port)
-  } else {
+  }
+  else {
     console.error(error)
   }
   process.exit(1)
@@ -31,6 +34,16 @@ server.on('request', (request, response) => {
   switch (true) {
     case request.method === 'GET' && request.url === '/ping':
       response.end('pong')
+      break
+    case request.method === 'POST' && request.url === '/twilio/sms/verify':
+      twilio.createVerification()
+        .then(status => response.end(status))
+        .catch((reason: unknown) => {
+          console.error('@twilio.createVerification:', reason)
+
+          response.statusCode = 400
+          response.end('Bad Request')
+        })
       break
     default:
       response.statusCode = 404
