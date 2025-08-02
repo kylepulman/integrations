@@ -1,6 +1,8 @@
 import dotenv from 'dotenv'
 import fs from 'node:fs'
 import http from 'node:http'
+import * as oauth from './oauth'
+import * as global from './globals'
 
 dotenv.config({ quiet: true })
 
@@ -10,8 +12,6 @@ type Token = {
   access_token: string
   expires_in: number
 }
-
-const INTEGRATIONS_BASE_URL = `http://${process.env.HOSTNAME ?? ''}:${process.env.PORT ?? ''}`
 
 const HUBSPOT_CLIENT_ID = process.env.HUBSPOT_CLIENT_ID ?? ''
 const HUBSPOT_CLIENT_SECRET = process.env.HUBSPOT_CLIENT_SECRET ?? ''
@@ -24,24 +24,15 @@ export async function refreshAccessToken(
 ) {
   let token = JSON.parse(fs.readFileSync('hubspot-token.json').toString()) as Token
 
-  const formData = new URLSearchParams()
-
-  formData.set('grant_type', 'refresh_token')
-  formData.set('refresh_token', token.refresh_token)
-  formData.set('client_id', HUBSPOT_CLIENT_ID)
-  formData.set('client_secret', HUBSPOT_CLIENT_SECRET)
-
-  const res = await fetch(HUBSPOT_OAUTH_TOKEN_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: formData.toString(),
+  const refreshedToken = await oauth.refreshAccessToken(HUBSPOT_OAUTH_TOKEN_URL, {
+    clientId: HUBSPOT_CLIENT_ID,
+    clientSecret: HUBSPOT_CLIENT_SECRET,
+    refreshToken: token.refresh_token,
   })
 
   token = {
     ...token,
-    ...(await res.json() as Record<string, unknown>),
+    ...(refreshedToken),
   }
 
   fs.writeFileSync('hubspot-token.json', JSON.stringify(token))
@@ -53,29 +44,28 @@ export async function getAccessToken(
   request: http.IncomingMessage,
   response: http.ServerResponse,
 ) {
-  const url = new URL(`${INTEGRATIONS_BASE_URL}${request.url ?? ''}`)
+  const pathname = request.url
 
-  const authCode = url.searchParams.get('code') ?? ''
+  if (!pathname) {
+    response.statusCode = 400
+    response.end('Bad Request')
+    return
+  }
 
-  const formData = new URLSearchParams()
+  const url = new URL(`${global.INTEGRATIONS_BASE_URL}${pathname}`)
 
-  formData.set('grant_type', 'authorization_code')
-  formData.set('code', authCode)
-  formData.set('redirect_uri', HUBSPOT_AUTH_REDIRECT)
-  formData.set('client_id', HUBSPOT_CLIENT_ID)
-  formData.set('client_secret', HUBSPOT_CLIENT_SECRET)
+  const authCode = url.searchParams.get('code')
 
-  console.log(formData.toString())
+  if (!authCode) {
+    throw new Error('authCode not found at getAccessToken')
+  }
 
-  const res = await fetch(HUBSPOT_OAUTH_TOKEN_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: formData.toString(),
+  const token = await oauth.getAccessToken(HUBSPOT_OAUTH_TOKEN_URL, {
+    code: authCode,
+    redirectUri: HUBSPOT_AUTH_REDIRECT,
+    clientId: HUBSPOT_CLIENT_ID,
+    clientSecret: HUBSPOT_CLIENT_SECRET,
   })
-
-  const token = await res.text()
 
   fs.writeFileSync('hubspot-token.json', token)
 
