@@ -19,5 +19,6 @@ A simple server to try out third-party APIs.
 - [ ] LinkedIn
 - [ ] Notion
 - [ ] WhatsApp
+- [x] Spotify
 - [x] Twilio
 - [x] HubSpot

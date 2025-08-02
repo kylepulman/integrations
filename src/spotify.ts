@@ -1,29 +1,27 @@
-import dotenv from 'dotenv'
-import fs from 'node:fs'
 import http from 'node:http'
-import * as oauth from './oauth'
+import fs from 'node:fs'
+
 import * as global from './globals'
+import * as oauth from './oauth'
 
-dotenv.config({ quiet: true })
-
-const HUBSPOT_CLIENT_ID = process.env.HUBSPOT_CLIENT_ID ?? ''
-const HUBSPOT_CLIENT_SECRET = process.env.HUBSPOT_CLIENT_SECRET ?? ''
-const HUBSPOT_OAUTH_TOKEN_URL = process.env.HUBSPOT_OAUTH_TOKEN_URL ?? ''
-const HUBSPOT_AUTH_REDIRECT = process.env.HUBSPOT_AUTH_REDIRECT ?? ''
+const SPOTIFY_OAUTH_TOKEN_URL = process.env.SPOTIFY_OAUTH_TOKEN_URL ?? ''
+const SPOTIFY_AUTH_REDIRECT = process.env.SPOTIFY_AUTH_REDIRECT ?? ''
+const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID ?? ''
+const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET ?? ''
 
 export async function refreshAccessToken(
   _request: http.IncomingMessage,
   response: http.ServerResponse,
 ) {
-  const FILENAME = 'hubspot-token.json'
+  const FILENAME = 'spotify-token.json'
 
   let token = JSON.parse(fs.readFileSync(FILENAME).toString()) as global.Token
 
-  const refreshedToken = await oauth.refreshAccessToken(HUBSPOT_OAUTH_TOKEN_URL, {
-    clientId: HUBSPOT_CLIENT_ID,
-    clientSecret: HUBSPOT_CLIENT_SECRET,
+  const refreshedToken = await oauth.refreshAccessToken(SPOTIFY_OAUTH_TOKEN_URL, {
+    clientId: SPOTIFY_CLIENT_ID,
+    clientSecret: SPOTIFY_CLIENT_SECRET,
     refreshToken: token.refresh_token,
-  }, 'formData')
+  }, 'basicAuth')
 
   token = {
     ...token,
@@ -55,14 +53,14 @@ export async function getAccessToken(
     throw new Error('authCode not found at getAccessToken')
   }
 
-  const token = await oauth.getAccessToken(HUBSPOT_OAUTH_TOKEN_URL, {
+  const token = await oauth.getAccessToken(SPOTIFY_OAUTH_TOKEN_URL, {
     code: authCode,
-    redirectUri: HUBSPOT_AUTH_REDIRECT,
-    clientId: HUBSPOT_CLIENT_ID,
-    clientSecret: HUBSPOT_CLIENT_SECRET,
-  }, 'formData')
+    redirectUri: SPOTIFY_AUTH_REDIRECT,
+    clientId: SPOTIFY_CLIENT_ID,
+    clientSecret: SPOTIFY_CLIENT_SECRET,
+  }, 'basicAuth')
 
-  fs.writeFileSync('hubspot-token.json', token)
+  fs.writeFileSync('spotify-token.json', token)
 
   response.end('Token stored!')
 }

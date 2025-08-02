@@ -3,6 +3,7 @@ import http from 'node:http'
 
 import * as hubspot from './hubspot'
 import * as twilio from './twilio'
+import * as spotify from './spotify'
 
 dotenv.config({ quiet: true })
 
@@ -37,6 +38,12 @@ server.on('request', (request, response) => {
   switch (true) {
     case request.method === 'GET' && request.url === '/ping':
       response.end('pong')
+      break
+    case request.method === 'GET' && request.url === '/spotify/auth/refresh':
+      void spotify.refreshAccessToken(request, response)
+      break
+    case request.method === 'GET' && request.url?.startsWith('/spotify/auth/redirect'):
+      void spotify.getAccessToken(request, response)
       break
     case request.method === 'GET' && request.url === '/hubspot/auth/refresh':
       void hubspot.refreshAccessToken(request, response)
