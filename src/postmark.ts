@@ -5,6 +5,10 @@ const POSTMARK_API_TOKEN = process.env.POSTMARK_API_TOKEN ?? ''
 const POSTMARK_FROM = process.env.POSTMARK_FROM ?? ''
 const client = new postmark.ServerClient(POSTMARK_API_TOKEN)
 
+export function isSendEmail(request: http.IncomingMessage) {
+  return request.method === 'POST' && request.url === '/postmark/broadcast/send'
+}
+
 export async function sendEmail(
   _request: http.IncomingMessage,
   response: http.ServerResponse,
@@ -18,5 +22,5 @@ export async function sendEmail(
     MessageStream: 'broadcast',
   })
 
-  response.end(result)
+  response.end(JSON.stringify(result))
 }

@@ -1,5 +1,6 @@
 import dotenv from 'dotenv'
 import twilio from 'twilio'
+import http from 'node:http'
 
 dotenv.config({ quiet: true })
 
@@ -10,7 +11,11 @@ const TWILIO_PHONE_NUMBER_TEST_RECIPIENT = process.env.TWILIO_PHONE_NUMBER_TEST_
 
 const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
-export async function createVerification() {
+export function isCreateVerification(req: http.IncomingMessage) {
+  return req.method === 'POST' && req.url === '/twilio/sms/verify'
+}
+
+export async function createVerification(_req: http.IncomingMessage, res: http.ServerResponse) {
   const verification = await client.verify.v2
     .services(TWILIO_SMS_VERIFY_SID)
     .verifications.create({
@@ -18,5 +23,5 @@ export async function createVerification() {
       to: TWILIO_PHONE_NUMBER_TEST_RECIPIENT,
     })
 
-  return verification.status
+  res.end(verification.status)
 }

@@ -10,6 +10,6 @@ export type Token = {
 }
 
 export const HOSTNAME = process.env.HOSTNAME ?? ''
-export const PORT = process.env.PORT ?? ''
+export const PORT = Number(process.env.PORT ?? 3000)
 
-export const INTEGRATIONS_BASE_URL = `http://${HOSTNAME}:${PORT}`
+export const INTEGRATIONS_BASE_URL = `http://${HOSTNAME}:${String(PORT)}`

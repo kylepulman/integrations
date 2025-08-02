@@ -9,6 +9,18 @@ const SPOTIFY_AUTH_REDIRECT = process.env.SPOTIFY_AUTH_REDIRECT ?? ''
 const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID ?? ''
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET ?? ''
 
+export function isRefreshAccessToken(
+  req: http.IncomingMessage,
+) {
+  return req.method === 'GET' && req.url === '/spotify/auth/refresh'
+}
+
+export function isGetAccessToken(
+  req: http.IncomingMessage,
+) {
+  return req.method === 'GET' && req.url?.startsWith('/spotify/auth/redirect')
+}
+
 export async function refreshAccessToken(
   _request: http.IncomingMessage,
   response: http.ServerResponse,

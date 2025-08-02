@@ -5,6 +5,10 @@ const STRIPE_SK = process.env.STRIPE_SK ?? ''
 
 const client = new Stripe(STRIPE_SK)
 
+export function isCreateProduct(req: http.IncomingMessage) {
+  return req.method === 'POST' && req.url === '/stripe/products/create'
+}
+
 export async function createProduct(_request: http.IncomingMessage, response: http.ServerResponse) {
   const product = await client.products.create({
     name: 'Test Subscription One',
