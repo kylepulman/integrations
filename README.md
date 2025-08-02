@@ -4,7 +4,6 @@ A simple server to try out third-party APIs.
 
 - [ ] Ticket Tailor (Event Management)
 - [ ] Telegram
-- [ ] Stripe
 - [ ] Square
 - [ ] Shopify
 - [ ] WooCommerce
@@ -19,6 +18,7 @@ A simple server to try out third-party APIs.
 - [ ] LinkedIn
 - [ ] Notion
 - [ ] WhatsApp
+- [x] Stripe
 - [x] Spotify
 - [x] Twilio
 - [x] HubSpot

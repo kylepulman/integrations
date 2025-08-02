@@ -9,6 +9,7 @@
     "@eslint/js": "^9.32.0",
     "@stylistic/eslint-plugin": "^5.2.2",
     "@types/node": "^24.1.0",
+    "@types/stripe": "^8.0.416",
     "eslint": "^9.32.0",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
@@ -16,6 +17,7 @@
   },
   "dependencies": {
     "dotenv": "^17.2.1",
+    "stripe": "^18.4.0",
     "twilio": "^5.8.0"
   },
   "type": "module"

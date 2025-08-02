@@ -4,6 +4,7 @@ import http from 'node:http'
 import * as hubspot from './hubspot'
 import * as twilio from './twilio'
 import * as spotify from './spotify'
+import * as stripe from './stripe'
 
 dotenv.config({ quiet: true })
 
@@ -50,6 +51,9 @@ server.on('request', (request, response) => {
       break
     case request.method === 'GET' && request.url?.startsWith('/hubspot/auth/redirect'):
       void hubspot.getAccessToken(request, response)
+      break
+    case request.method === 'POST' && request.url === '/stripe/products/create':
+      void stripe.createProduct(request, response)
       break
     case request.method === 'POST' && request.url === '/twilio/sms/verify':
       twilio.createVerification()
