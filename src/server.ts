@@ -5,6 +5,7 @@ import * as hubspot from './hubspot'
 import * as twilio from './twilio'
 import * as spotify from './spotify'
 import * as stripe from './stripe'
+import * as postmark from './postmark'
 
 dotenv.config({ quiet: true })
 
@@ -39,6 +40,9 @@ server.on('request', (request, response) => {
   switch (true) {
     case request.method === 'GET' && request.url === '/ping':
       response.end('pong')
+      break
+    case request.method === 'POST' && request.url === '/postmark/broadcast/send':
+      void postmark.sendEmail(request, response)
       break
     case request.method === 'GET' && request.url === '/spotify/auth/refresh':
       void spotify.refreshAccessToken(request, response)
